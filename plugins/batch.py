@@ -222,26 +222,13 @@ async def process_msg(c, u, m, d, lt, uid, i):
             
             st = time.time()
             p = await c.send_message(d, 'Downloading...')
-
-            orig_filename = None
-            if getattr(m, 'document', None) and m.document.file_name:
-                orig_filename = m.document.file_name
-            elif getattr(m, 'video', None) and m.video.file_name:
-                orig_filename = m.video.file_name
-            elif getattr(m, 'audio', None) and m.audio.file_name:
-                orig_filename = m.audio.file_name
-
-            if orig_filename:
-                safe_filename = re.sub(r'[<>:"/\\|?*]', '_', orig_filename)
-            else:
-                safe_filename = None
-
-            f = await u.download_media(
-                m,
-                file_name=safe_filename,
-                progress=prog,
-                progress_args=(c, d, p.id, st)
+            orig = next(
+                (getattr(m, t).file_name for t in ('document', 'video', 'audio')
+                 if getattr(m, t, None) and getattr(m, t).file_name),
+                None
             )
+            safe = re.sub(r'[<>:"/\\|?*]', '_', orig) if orig else None
+            f = await u.download_media(m, file_name=safe, progress=prog, progress_args=(c, d, p.id, st))
             if not f:
                 await c.edit_message_text(d, p.id, 'Failed.')
                 return 'Failed.'
