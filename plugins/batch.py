@@ -248,10 +248,19 @@ if m.media:
                 progress=prog,
                 progress_args=(c, d, p.id, st)
             )
+            print(f"DEBUG ▶ downloaded path f = {f!r}")
 
-            if not f:
-                await c.edit_message_text(d, p.id, 'Failed.')
-                return 'Failed.'  
+            exists = os.path.exists(f)
+            print(f"DEBUG ▶ os.path.exists(f) = {exists}")
+
+            cwd = os.getcwd()
+            print(f"DEBUG ▶ cwd = {cwd!r}")
+            print(f"DEBUG ▶ os.listdir(cwd) = {os.listdir(cwd)!r}")
+
+            if not f or not exists:
+                await c.edit_message_text(d, p.id,
+                    f"Failed. (download returned {f!r}, exists={exists})")
+                return 'Failed.'
           
         await c.edit_message_text(d, p.id, 'Renaming...')  
         if (  
